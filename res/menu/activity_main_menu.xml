@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    
+    <!-- Search / will display always -->
+    <item android:id="@+id/hand_btn"
+          android:icon="@drawable/hand"
+          android:title="@string/hand_btn"
+          android:showAsAction="always"
+          />
+    
+    <item android:id="@+id/node_btn"
+          android:icon="@drawable/node"
+          android:title="@string/node_btn"
+          android:showAsAction="always"
+          />
+    
+    <item android:id="@+id/line_btn"
+          android:icon="@drawable/line"
+          android:title="@string/line_btn"
+          android:showAsAction="always"
+          />
+    
+    <item android:id="@+id/eraser_btn"
+          android:icon="@drawable/eraser"
+          android:title="@string/eraser_btn"
+          android:showAsAction="always"
+          />
+    
+    <item android:id="@+id/input_btn"   
+          android:title="@string/input_btn"
+          />
+    <item android:id="@+id/new_btn"   
+          android:title="@string/new_pro"
+          />
+    <item android:id="@+id/from_file_btn"   
+          android:title="@string/from_files"
+          />
+    <item android:id="@+id/save_btn"
+          android:title="@string/save"
+          />
+    
+    <item android:id="@+id/save_as_image_btn"
+          android:title="@string/save_as_image"
+          />
+    
+     <item android:id="@+id/exit_btn"
+          android:title="@string/exit"
+          />
+    
+    
+</menu>

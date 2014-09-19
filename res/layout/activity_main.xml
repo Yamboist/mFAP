@@ -1,0 +1,22 @@
+<com.example.automataalpha.CustomViewPager xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/pager"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+</com.example.automataalpha.CustomViewPager>
+
+<!--  <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:background="#FFCCCCCC"
+	android:orientation="vertical"
+	tools:context=".MainActivity" >
+
+	
+	<com.example.automataalpha.CirclesDrawingView
+	    android:id="@+id/cdv"
+	    android:layout_width="match_parent"
+	    android:layout_height="435dp"
+	    android:background="#FFFFFF" />
+
+</LinearLayout>-->

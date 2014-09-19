@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">mFAP</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="tools_btn">Tools Button</string>
+    <string name="input_btn">Input Button</string>
+    <string name="convert_btn">Convert Button</string>
+    
+    <string name="hand_btn">Hand Button</string>
+    <string name="node_btn">Node Button</string>
+    <string name="line_btn">Line Button</string>
+	<string name="eraser_btn">Eraser Button</string>
+
+	<string name="tools_msg">Back</string>
+	
+	<string name="new_pro">New</string>
+	<string name="from_files">From Files</string>
+	<string name="save">Save</string>
+	<string name="save_as_image">Save as Image</string>
+	<string name="exit">Exit</string>
+	
+</resources>

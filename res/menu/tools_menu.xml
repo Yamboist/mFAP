@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    
+    <!-- Search / will display always -->
+    <item android:id="@+id/hand_btn"
+          android:icon="@drawable/hand"
+          android:title="@string/tools_btn"
+          android:showAsAction="always"
+          />
+    
+    <item android:id="@+id/node_btn"
+          android:icon="@drawable/node"
+          android:title="@string/input_btn"
+          android:showAsAction="always"
+          />
+    
+    <item android:id="@+id/line_btn"
+          android:icon="@drawable/line"
+          android:title="@string/convert_btn"
+          android:showAsAction="always"
+          />
+    
+    <item android:id="@+id/eraser_btn"
+          android:icon="@drawable/eraser"
+          android:title="@string/convert_btn"
+          android:showAsAction="always"
+          />
+</menu>
