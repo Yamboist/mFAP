@@ -25,10 +25,7 @@
           android:title="@string/eraser_btn"
           android:showAsAction="always"
           />
-    
-    <item android:id="@+id/input_btn"   
-          android:title="@string/input_btn"
-          />
+
     <item android:id="@+id/new_btn"   
           android:title="@string/new_pro"
           />

@@ -1,17 +1,26 @@
 package com.example.automataalpha;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 
-public class Node {
+public class Node implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7916984637998357153L;
 	String label;
 	HashMap<String,ArrayList<Relation>> relations = new HashMap<String,ArrayList<Relation>>();
 	boolean isFinal = false;
 	boolean isInitial = false;
-	
+	Node trap;
 	
 	public Node(String label){
 		this.label = label;
+		if(this.label != "trap"){
+			this.trap = new Node("trap");
+		}
 	}
 	
 	public void addRelation(Node dest, String chr){
@@ -49,13 +58,18 @@ public class Node {
 		
 	}
 	
-	public ArrayList<Node> traverse(String string){
+	public ArrayList<Node> dfa_traverseGetAll(String string){
 		ArrayList<Node> frontiers = new ArrayList<Node>();
 		ArrayList<Node> newFrontier = new ArrayList<Node>();
 		ArrayList<Node> trapped = new ArrayList<Node>();
+		ArrayList<Node> path = new ArrayList<Node>();
 		frontiers.add(this);
+		path.add(frontiers.get(0));
+		boolean going = false;
+		int size = string.toCharArray().length-1;
+		int index = 0;
 		for(char current : string.toCharArray()){
-			
+			going = false;
 			for(int i=0;i<frontiers.size();i++){
 				
 				newFrontier = new ArrayList<Node>();
@@ -64,6 +78,54 @@ public class Node {
 				if(temp != null){
 					for(int nodeIndex=0;nodeIndex<temp.length;nodeIndex++){
 						newFrontier.add(temp[nodeIndex]);
+						going = true;
+					}
+					
+				}
+				else{
+					trapped.add(frontiers.get(i));
+					
+				}
+				
+				
+			}
+			try{
+				path.add(newFrontier.get(0));
+			}catch(Exception e){}
+			
+			frontiers.clear();
+			frontiers = newFrontier;
+			if(!going && index < size){
+				break;
+			}
+			index++;
+		}
+		if(!going){
+			path.add(this.trap);
+		}
+		return path;
+	}
+	
+	
+	public ArrayList<Node> traverse(String string){
+		ArrayList<Node> frontiers = new ArrayList<Node>();
+		ArrayList<Node> newFrontier = new ArrayList<Node>();
+		ArrayList<Node> trapped = new ArrayList<Node>();
+		frontiers.add(this);
+		boolean going = true;
+		int size = string.toCharArray().length-1;
+		int index = 0;
+		for(char current : string.toCharArray()){
+			going = false;
+			for(int i=0;i<frontiers.size();i++){
+				System.out.println(frontiers.get(0).label);
+				newFrontier = new ArrayList<Node>();
+				Node temp[] = frontiers.get(i).next(String.valueOf(current));
+				
+				if(temp != null){
+					for(int nodeIndex=0;nodeIndex<temp.length;nodeIndex++){
+						newFrontier.add(temp[nodeIndex]);
+						going = true;
 					}
 					
 				}
@@ -76,32 +138,20 @@ public class Node {
 			
 			frontiers.clear();
 			frontiers = newFrontier;
-			
+			if(!going && index < size){
+				break;
+			}
+			index++;
 		}
+		
 		trapped.addAll(frontiers);
+		if(!going){
+			trapped.add(this.trap);
+			return trapped;
+		}
 		return trapped;
 	}
 	
-	public static void main(String args[]){
-		Node q1 = new Node("q1");
-		Node q2 = new Node("q2");
-		Node q3 = new Node("q3");
-		Node q4 = new Node("q4");
-		
-		q1.isInitial = true;
-		q4.isFinal = true;
-		
-		q1.addRelation(q2, "0");
-		q2.addRelation(q4, "0");
-		q1.addRelation(q3, "1");
-		q3.addRelation(q2, "1");
-		q3.addRelation(q1,"0");
-		
-		ArrayList<Node> result = q1.traverse("100");
-		
-		for(int i=0;i<result.size();i++){
-			System.out.print(result.get(i).label);
-		}
-	}
+
 	
 }

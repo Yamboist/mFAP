@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item android:id="@+id/add_row"
+          android:title="@string/add_rowx"
+    />
+    
+    <item android:id="@+id/delete_row"
+          android:title="@string/delete_row"
+    />
+    
+    <item android:id="@+id/run"
+          android:title="@string/multi_run"
+    />
+   
+
+</menu>

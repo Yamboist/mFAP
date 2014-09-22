@@ -1,6 +1,12 @@
 package com.example.automataalpha;
 
-public class Relation {
+import java.io.Serializable;
+
+public class Relation implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5494874515405336519L;
 	Node src;
 	Node dest;
 	String chr;

@@ -1,25 +1,39 @@
 package com.example.automataalpha;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
+
 import com.example.automataalpha.TabsPagerAdapter;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.FragmentTransaction;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 @SuppressLint("NewApi")
 public class MainActivity extends FragmentActivity implements ActionBar.TabListener  {
@@ -27,19 +41,50 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     private TabsPagerAdapter mAdapter;
     private ActionBar actionBar;
     
-    
-    
-    
     // Tab titles
     private String[] tabs = { "Drawing", "Simulate", "Convert" };
-    DrawingActivity always = new DrawingActivity();
-    InputActivity inputs = new InputActivity();
-    ConvertActivity converts = new ConvertActivity();
+    DrawingActivity always;
+    InputActivity inputs;
+    ConvertActivity converts;
+    
     
     int pos = 0;
+    
+    @Override
+    protected void onSaveInstanceState(Bundle state){
+    	state.putString("ere", "kva");
+    	super.onSaveInstanceState(state);
+    	//state.putSerializable("actv", this.always);
+    	Log.w("[--------------------------]","hellohewwwwwwwwwwwwwllohello");
+    	
+    }
+    @Override
+    protected void onRestoreInstanceState(Bundle state){ 
+    	super.onRestoreInstanceState(state);
+    	Log.w("-=-=-=-=-=-=-=---=-=-=-=-=-=-=-=-=-=-=-",state.getString("ere"));
+    }
+    
+    @Override
+    protected void onResume(){
+    	super.onResume();
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.w("[--------------------------]","hellohellohello");
+        if(savedInstanceState == null){
+        	Log.w("[-----------------------------]","WHAAAAAAAAATTTTTT");
+        }
+        if(savedInstanceState != null){
+        	Log.w("[--------------------------]","pewewpewpepwewpewpew");
+        }
+        else{
+        if(this.always == null && this.converts == null && this.inputs == null){
+        	 this.always = new DrawingActivity();
+             this.converts = new ConvertActivity();
+             this.inputs = new InputActivity();
+        }
+       
         setContentView(R.layout.activity_main);
         getActionBar().setDisplayShowTitleEnabled(false);
         getActionBar().setDisplayShowHomeEnabled(false);
@@ -65,6 +110,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
          * */
         
         mAdapter.always = this.always;
+        
         mAdapter.inputs = this.inputs;
         mAdapter.convert = this.converts;
         viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -84,7 +130,26 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             @Override
             public void onPageScrollStateChanged(int arg0) {
             }
+       
         });
+        }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     }
  
     @Override
@@ -98,7 +163,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     public void onTabSelected(Tab tab, FragmentTransaction ft) {
         // on tab selected
         // show respected fragment view
-       
+       inputs.cdv = always.mycdv;
     	viewPager.setCurrentItem(tab.getPosition());
         
     }
@@ -146,6 +211,17 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         	pos =3;
         	invalidateOptionsMenu();
         	return true;
+        case R.id.new_btn:
+        	
+        	this.always.mycdv.mCirclePointer.clear();
+        	this.always.mycdv.mCircles.clear();
+        	this.always.mycdv.initial = null;
+        	this.always.mycdv.mLines.clear();
+        	this.always.mycdv.invalidate();
+        	return true;
+        case R.id.save_as_image_btn:
+        	save();
+        	return true;
         default:
             return super.onOptionsItemSelected(item);
         }
@@ -182,49 +258,71 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
     }
     
-	/*@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		
-		super.onCreate(savedInstanceState);
-		//this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-
-	    //Remove notification bar
-	    //this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
-		setContentView(R.layout.activity_main);
-		
-		/*ImageButton nodes = (ImageButton) findViewById(R.id.file_btn);
-		ImageButton lines = (ImageButton) findViewById(R.id.input_btn);
-		ImageButton delete = (ImageButton) findViewById(R.id.convert_btn);
-		final CirclesDrawingView cdw = (CirclesDrawingView) findViewById(R.id.cdv);
-		
-		nodes.setOnClickListener(new View.OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				cdw.mode = 1;
-			}
-		});
-		
-		lines.setOnClickListener(new View.OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				cdw.mode = 2;
-			}
-		});
-		
-		delete.setOnClickListener(new View.OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				cdw.mode = 3;
-			}
-		});
-	}*/
-
 	
+    public void save()
+    {
+    	this.always.mycdv.setDrawingCacheEnabled(true);
+    	
+    	
+    	
+    	
+    	AlertDialog.Builder alert = new AlertDialog.Builder(this);
+		alert.setTitle("Input file");
+		alert.setMessage("Please give the name of the image");
+	
+		final EditText input = new EditText(this);
+		alert.setView(input);
+		final String fileName;
+		final boolean cont = false;
+		final Context actv = this;
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			@SuppressWarnings("unchecked")
+			public void onClick(DialogInterface dialog, int whichButton) {
+				Bitmap bitmap = ( (MainActivity) actv).always.mycdv.getDrawingCache();    
+		        String path = Environment.getExternalStorageDirectory().getAbsolutePath(); 
+		              
+		               File file = getAlbumStorageDir(input.getText().toString()+".png");
+		               Toast.makeText(getApplicationContext(), file.getAbsolutePath(),Toast.LENGTH_LONG).show();
+		                 try 
+		                 {
+		                     if(!file.exists())
+
+		                 {
+		                     file.createNewFile();
+		                 }
+		                     FileOutputStream ostream = new FileOutputStream(file);
+		                     bitmap.compress(CompressFormat.PNG, 10, ostream);
+
+		                     ostream.close();                            
+		                 } 
+		                 catch (Exception e) 
+		                 {
+		                     e.printStackTrace();
+		                 }
+			  }
+			});
+		
+		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int whichButton) {
+				
+			}
+		});
+
+		alert.show();
+    	
+    	
+    	
+    	
+    
+     
+
+    }
+    
+    public File getAlbumStorageDir(String albumName) {
+        // Get the directory for the user's public pictures directory. 
+        File file = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), albumName);
+        
+        return file;
+    }
 }

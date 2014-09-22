@@ -1,5 +1,6 @@
 package com.example.automataalpha;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,8 +17,12 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Paint.Style;
 import android.graphics.Path;
 import android.graphics.Rect;
+import android.graphics.RectF;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.v7.widget.PopupMenu;
 import android.text.Editable;
 import android.util.AttributeSet;
@@ -34,9 +39,10 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.PopupWindow;
 import android.widget.Switch;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
-public class CirclesDrawingView extends View {
+public class CirclesDrawingView extends View implements Serializable {
 	
     private static final String TAG = "CirclesDrawingView";
 
@@ -48,8 +54,12 @@ public class CirclesDrawingView extends View {
     public CircleArea initial;
     
     /** Stores data about single circle */
-    public static class CircleArea extends Node {
-        int radius;
+    public static class CircleArea extends Node implements Serializable {
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 285162914351651345L;
+		int radius;
         int centerX;
         int centerY;
         String id;
@@ -70,10 +80,15 @@ public class CirclesDrawingView extends View {
         }
     }
     
-    public static class Lines{
-    	int startX,startY,endX,endY;
+    public static class Lines implements Serializable{
+    	/**
+		 * 
+		 */
+		private static final long serialVersionUID = 3749229899069432747L;
+		int startX,startY,endX,endY;
     	CircleArea circleStart = null;
     	CircleArea circleEnd = null;
+    	CircleArea clickable;
     	String name;
     	int textCoordsX,textCoordsY;
     	Lines(int startX,int startY,int endX,int endY){
@@ -96,10 +111,11 @@ public class CirclesDrawingView extends View {
     private static final int CIRCLES_LIMIT = 20;
 
     /** All available circles */
-    private ArrayList<Lines> mLines = new ArrayList<Lines>();
-    private HashMap<String,Lines> corr = new HashMap<String,Lines>();
-    private HashSet<CircleArea> mCircles = new HashSet<CircleArea>(CIRCLES_LIMIT);
-    private SparseArray<CircleArea> mCirclePointer = new SparseArray<CircleArea>(CIRCLES_LIMIT);
+    ArrayList<Lines> mLines = new ArrayList<Lines>();
+    HashMap<String,Lines> corr = new HashMap<String,Lines>();
+    HashSet<CircleArea> mCircles = new HashSet<CircleArea>(CIRCLES_LIMIT);
+    ArrayList<CircleArea> hCircles = new ArrayList<CircleArea>();
+    SparseArray<CircleArea> mCirclePointer = new SparseArray<CircleArea>(CIRCLES_LIMIT);
 
     /**
      * Default constructor
@@ -140,10 +156,13 @@ public class CirclesDrawingView extends View {
         //canv.drawBitmap(mBitmap, null, mMeasuredRect, null);
     	
         for (CircleArea circle : mCircles) {
+        	
         	mCirclePaint.setColor(Color.GRAY);
         	canv.drawCircle(circle.centerX, circle.centerY, circle.radius+2, mCirclePaint);
         	mCirclePaint.setColor(0xFFBFFFEF);
             canv.drawCircle(circle.centerX, circle.centerY, circle.radius, mCirclePaint);
+            
+            
             if(circle.isFinal){
             	mCirclePaint.setColor(Color.GRAY);
             	mCirclePaint.setStyle(Paint.Style.STROKE);
@@ -161,19 +180,26 @@ public class CirclesDrawingView extends View {
       
             	canv.drawPath(path, mCirclePaint);
             }
+            
+            
             mCirclePaint.setTextSize(23);
             mCirclePaint.setColor(Color.BLACK);
             canv.drawText(circle.id,circle.centerX-12,circle.centerY+8,mCirclePaint);
         }
+        
         if(mLines.size() >= 1){
         	mCirclePaint.setStrokeWidth(1);
         	if(mode == 2 || mode == 3){
 	        	for(int i=0;i<mLines.size();i++){
 	    
 	        		
+		        		
 	        			if(mLines.get(i).circleEnd != null){
+	        				
+
 		        			mCirclePaint.setColor(Color.BLACK);
 			            	mCirclePaint.setStrokeWidth(1);
+			            	
 			            	int points[] = this.getPoints(
 			            			mLines.get(i).circleStart.centerX,
 			            			mLines.get(i).circleStart.centerY,
@@ -182,8 +208,29 @@ public class CirclesDrawingView extends View {
 			            	
 			            	canv.drawLine(
 			            			points[0],points[1],points[2],points[3], 
-			            			mCirclePaint);	
+			            			mCirclePaint);
+			            	
 			            	canv.drawCircle(points[2], points[3], 4, mCirclePaint);
+			            	
+			            	//int rectPoints[] = this.rectBound(points);
+			            	//RectF rectF = new RectF(rectPoints[0],rectPoints[1],rectPoints[2],rectPoints[3]);
+			            	int rectPoints[] = {
+			            			mLines.get(i).circleStart.centerX,
+			            			mLines.get(i).circleStart.centerY,
+			            			mLines.get(i).circleEnd.centerX, 
+			            			mLines.get(i).circleEnd.centerY};
+			            	
+			   			  Path path = new Path();
+			   			  RectF oval = new RectF();
+			   			  
+			   			  mCirclePaint.setStyle(Style.STROKE);
+			   			  mCirclePaint.setColor(Color.BLACK);
+			   			  oval.set(rectPoints[0]-60,rectPoints[1],rectPoints[0],rectPoints[1]+60);
+			   			  path.arcTo(oval,250,-230,true);
+			   			  canv.drawPath(path, mCirclePaint);
+			   			  
+			   			  mCirclePaint.setStyle(Style.FILL);
+			   			  
 			            	
 			            	if(mLines.get(i).name != null){
 				            	mCirclePaint.setTextSize(20);
@@ -196,6 +243,8 @@ public class CirclesDrawingView extends View {
 				                
 				                mCirclePaint.setTextSize(12);
 			            	}
+			            	
+			            	
 		        		}
 		        		else{
 		        			canv.drawLine(
@@ -229,6 +278,8 @@ public class CirclesDrawingView extends View {
 	            	
 	            	mCirclePaint.setTextSize(20);
 	            	
+
+	            	
 	            	canv.drawCircle(points[2], points[3], 4, mCirclePaint);
 	            	mLines.get(i).textCoordsX = (points[0]+points[2])/2;
 	            	mLines.get(i).textCoordsY = (points[1]+points[3])/2;
@@ -243,6 +294,51 @@ public class CirclesDrawingView extends View {
         
     }
 
+    public float[] getAwayPoints(int org_points[],float deg){
+    	int x0 = org_points[0];
+    	int y0 = org_points[1];
+    	int x1 = org_points[2];
+    	int y1 = org_points[3];
+    	
+    	double d = Math.sqrt( Math.pow( (x1-x0), 2) + Math.pow( (y1-y0), 2) );
+    	double r = d*Math.sin(Math.PI/4);
+    	double m = (y1-y0)/(x1-x0);
+    	double phi = Math.atan(m);
+    	double beta = phi - Math.PI* (deg/180);
+    	
+    	double inc_x = r*Math.cos(beta);
+    	double inc_y = r*Math.sin(beta);
+    	
+    	float newPoints[] = {(float) (x0 + inc_x), (float) (y0+inc_y)};
+    	
+    	return newPoints;
+    	
+    }
+    public int[] rectBound(int org_points[]){
+    	int points[] = new int[4];
+    	if(org_points[0] > org_points[2]){
+    		points[0] = org_points[2];
+    		points[2] = org_points[0];
+    	}
+    	else{
+    		points[0] = org_points[0];
+    		points[2] = org_points[2];
+    	}
+    	
+    	if(org_points[1] > org_points[3]){
+    		points[1] = org_points[3];
+    		points[3] = org_points[1];
+    	}
+    	else{
+    		points[1] = org_points[1];
+    		points[3] = org_points[3];
+    	}
+    	
+    	return points;
+    }
+    
+    
+    
     /*
      * 
      * 
@@ -443,7 +539,11 @@ public class CirclesDrawingView extends View {
 	            		mCircles.remove(touchedCircle);
 	            		touchedCircle = null;
             		}
-	          
+            		CircleArea hiddenCircle = getHiddenTouchedCircle(xTouch,yTouch);
+            		if(hiddenCircle != null){
+            			Toast.makeText(getContext().getApplicationContext(), "Hallo you clicked me", Toast.LENGTH_LONG).show();
+
+            		}
             		invalidate();
             		
             		handled = true;
@@ -538,16 +638,9 @@ public class CirclesDrawingView extends View {
             		
             		if(touchedCircle != null){
             			final Lines currentLine = mLines.get(mLines.size()-1);
-            			touchedCircle.myLines.add(mLines.get(mLines.size()-1));
-            			currentLine.endX = touchedCircle.centerX;
-            			currentLine.endY = touchedCircle.centerY;
-            			currentLine.circleEnd = touchedCircle;
+            			final CircleArea touchedCircle2 = touchedCircle;
             			
-            			
-            			
-            			
-            			
-            			
+
             			AlertDialog.Builder alert = new AlertDialog.Builder(this.getContext());
             			alert.setTitle("Input symbol");
             			alert.setMessage("Please give the input symbol for the two terminals");
@@ -558,12 +651,30 @@ public class CirclesDrawingView extends View {
             			alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             				public void onClick(DialogInterface dialog, int whichButton) {
             					Editable value = input.getText();
+            					for(int i=0;i<mLines.size();i++){
+                    				if(mLines.get(i).circleStart == currentLine.circleStart && touchedCircle2 == mLines.get(i).circleEnd){
+                    					if(!mLines.get(i).name.equals(value.toString())){
+	                    					mLines.get(i).name += ","+value.toString();
+	                    					currentLine.circleStart.addRelation(mLines.get(i).circleEnd, value.toString());
+	                    					invalidate();
+	                    					mLines.remove(mLines.size()-1);
+                    					}
+                    					return;
+                    				}
+                    			}
+            					
+            					touchedCircle2.myLines.add(mLines.get(mLines.size()-1));
+                    			currentLine.endX = touchedCircle2.centerX;
+                    			currentLine.endY = touchedCircle2.centerY;
+                    			currentLine.circleEnd = touchedCircle2;
             					currentLine.name = value.toString();
             					currentLine.textCoordsX = (currentLine.startX+currentLine.endX)/2;
             					currentLine.textCoordsY = (currentLine.startY+currentLine.endY)/2;
-            					
             					CircleArea mytouchedCircle = currentLine.circleEnd;
             					currentLine.circleStart.addRelation(mytouchedCircle, currentLine.name);
+
+            					currentLine.clickable= new CircleArea(currentLine.textCoordsX,currentLine.textCoordsY,40,"");
+            					hCircles.add(currentLine.clickable);
             				  }
             				});
 
@@ -675,13 +786,30 @@ public class CirclesDrawingView extends View {
                 break;
             }
         }
-
+        
         return touched;
     }
 
+    
+    private CircleArea getHiddenTouchedCircle(final int xTouch, final int yTouch) {
+        CircleArea touched = null;
+
+        for (CircleArea circle : hCircles) {
+            if ((circle.centerX - xTouch) * (circle.centerX - xTouch) + (circle.centerY - yTouch) * (circle.centerY - yTouch) <= circle.radius * circle.radius) {
+                touched = circle;
+                break;
+            }
+        }
+        
+        return touched;
+    }
     @Override
     protected void onMeasure(final int widthMeasureSpec, final int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         mMeasuredRect = new Rect(0, 0, getMeasuredWidth(), getMeasuredHeight());
     }
+
+
+
+	
 }

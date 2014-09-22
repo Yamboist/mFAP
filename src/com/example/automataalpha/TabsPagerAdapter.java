@@ -26,6 +26,7 @@ public class TabsPagerAdapter extends FragmentPagerAdapter {
             return this.always;
         case 1:
             // Games fragment activity
+        	this.inputs.cdv = this.always.mycdv;
             return this.inputs;
         case 2:
             // Movies fragment activity
