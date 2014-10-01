@@ -50,7 +50,7 @@ public class CirclesDrawingView extends View implements Serializable {
     private Bitmap mBitmap = null;
     public int mode = 0;
     private Rect mMeasuredRect;
-    private int number_of_nodes = 0;
+    public int number_of_nodes = 0;
     public CircleArea initial;
     
     /** Stores data about single circle */
@@ -116,7 +116,7 @@ public class CirclesDrawingView extends View implements Serializable {
     HashSet<CircleArea> mCircles = new HashSet<CircleArea>(CIRCLES_LIMIT);
     ArrayList<CircleArea> hCircles = new ArrayList<CircleArea>();
     SparseArray<CircleArea> mCirclePointer = new SparseArray<CircleArea>(CIRCLES_LIMIT);
-
+    
     /**
      * Default constructor
      *
@@ -220,7 +220,7 @@ public class CirclesDrawingView extends View implements Serializable {
 			            			mLines.get(i).circleEnd.centerX, 
 			            			mLines.get(i).circleEnd.centerY};
 			            	
-			   			  Path path = new Path();
+			   			  /*Path path = new Path();
 			   			  RectF oval = new RectF();
 			   			  
 			   			  mCirclePaint.setStyle(Style.STROKE);
@@ -229,7 +229,7 @@ public class CirclesDrawingView extends View implements Serializable {
 			   			  path.arcTo(oval,250,-230,true);
 			   			  canv.drawPath(path, mCirclePaint);
 			   			  
-			   			  mCirclePaint.setStyle(Style.FILL);
+			   			  mCirclePaint.setStyle(Style.FILL);*/
 			   			  
 			            	
 			            	if(mLines.get(i).name != null){
@@ -427,7 +427,7 @@ public class CirclesDrawingView extends View implements Serializable {
             		// check if we've touched inside some circle
                     touchedCircle = obtainTouchedCircle(xTouch, yTouch);
                     
-                    if(touchedCircle != null){
+                    if(touchedCircle != null && this.getContext().getClass() == MainActivity.class){
                     	final PopupWindow pwindo;
                     	LayoutInflater inflater = (LayoutInflater) this.getContext()
                     			.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -457,7 +457,12 @@ public class CirclesDrawingView extends View implements Serializable {
                     	btn_init.setOnClickListener(new OnClickListener(){
                     		@Override
                     		public void onClick(View view){
-                    			 class_view.initial = touched;
+                    			if(class_view.initial != null){ 
+                    				class_view.initial.isInitial = false;
+                    			}
+                    			class_view.initial = touched;
+                    			 
+                    			 touched.isInitial = true;
                     			 pwindo.dismiss();
                     			 invalidate();
                     		}     	
@@ -485,7 +490,38 @@ public class CirclesDrawingView extends View implements Serializable {
                     	btn_set_label.setOnClickListener(new OnClickListener(){
                     		@Override
                     		public void onClick(View view){
+                    			AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
+                    			alert.setTitle("New label");
+                    			alert.setMessage("Please give the new label for the node");
                     			
+                    			final EditText input = new EditText(getContext());
+                    			alert.setView(input);
+                    			
+                    			alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    				public void onClick(DialogInterface dialog, int whichButton) {
+                    					boolean cont = true;
+                    					for(CircleArea circle: mCircles){
+                    						if(circle.id.equals(input.getText().toString())){
+                    							cont = false;
+                    						}
+                    					}
+                    					if(cont){
+                    						String temp = touched.id;
+                    						touched.id = input.getText().toString();
+                    						touched.label = touched.id;
+                    						Toast.makeText(getContext().getApplicationContext(), temp+" is replaced as "+touched.id, Toast.LENGTH_LONG).show();
+                    						pwindo.dismiss();
+                    					}
+                    				  }
+                    				});
+
+                    			alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    				public void onClick(DialogInterface dialog, int whichButton) {
+                    					
+                    				}
+                    			});
+
+                    			alert.show();
                     		}     	
                     	});
                     	
@@ -531,13 +567,35 @@ public class CirclesDrawingView extends View implements Serializable {
                     yTouch = (int) event.getY(0);
             		touchedCircle = obtainTouchedCircle(xTouch,yTouch);
             		if(touchedCircle != null){
-	            		for(int i=0;i<touchedCircle.myLines.size();i++){
+            			for(CircleArea circle: mCircles){
+            				for(String key: circle.relations.keySet()){
+            					for(Relation n: circle.relations.get(key).toArray(new Relation[0])){
+            						if(n.dest.label.equals(touchedCircle.id)){
+            							circle.relations.get(key).remove(n);
+            						}
+            						if(circle.relations.get(key).size() <= 0 ){
+            							circle.relations.remove(key);
+            						}
+            					}
+            				}
+            			}
+            			
+            			for(Lines l: mLines.toArray(new Lines[0])){
+            				if(l.circleEnd.label.equals(touchedCircle.id) || l.circleStart.label.equals(touchedCircle.id)){
+            					
+            					mLines.remove(l);
+            				}
+            				
+            			}
+            			
+	            		/*for(int i=0;i<touchedCircle.myLines.size();i++){
 	            			touchedCircle.myLines.get(i).circleEnd.myLines.remove(touchedCircle.myLines.get(i));
 	            			mLines.remove(touchedCircle.myLines.get(i));
 	            			
-	            		}
+	            		}*/
+            			
 	            		mCircles.remove(touchedCircle);
-	            		touchedCircle = null;
+	            		//touchedCircle = null;
             		}
             		CircleArea hiddenCircle = getHiddenTouchedCircle(xTouch,yTouch);
             		if(hiddenCircle != null){
@@ -753,17 +811,21 @@ public class CirclesDrawingView extends View implements Serializable {
         CircleArea touchedCircle = getTouchedCircle(xTouch, yTouch);
 
         if (null == touchedCircle && mode == 1) {
-            touchedCircle = new CircleArea(xTouch, yTouch,RADIUS,String.valueOf(number_of_nodes));
-            number_of_nodes++;
-            
-            if (mCircles.size() == CIRCLES_LIMIT) {
-                Log.w(TAG, "Clear all circles, size is " + mCircles.size());
-                // remove first circle
-                mCircles.clear();
+        	if (mCircles.size() >= CIRCLES_LIMIT) {
+                
+                Toast.makeText(getContext().getApplicationContext(), "Only up to 20 circles only", Toast.LENGTH_LONG).show();
             }
+        	else{
+            touchedCircle = new CircleArea(xTouch, yTouch,RADIUS,String.valueOf(number_of_nodes));
+           
+            number_of_nodes++;
+           
+            
+            
 
             Log.w(TAG, "Added circle " + touchedCircle);
             mCircles.add(touchedCircle);
+        	}
         }
  
         return touchedCircle;

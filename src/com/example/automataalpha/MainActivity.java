@@ -1,9 +1,16 @@
 package com.example.automataalpha;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
+import com.example.automataalpha.CirclesDrawingView.CircleArea;
+import com.example.automataalpha.CirclesDrawingView.Lines;
 import com.example.automataalpha.TabsPagerAdapter;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
@@ -55,7 +62,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     	state.putString("ere", "kva");
     	super.onSaveInstanceState(state);
     	//state.putSerializable("actv", this.always);
-    	Log.w("[--------------------------]","hellohewwwwwwwwwwwwwllohello");
+ 
     	
     }
     @Override
@@ -64,10 +71,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     	Log.w("-=-=-=-=-=-=-=---=-=-=-=-=-=-=-=-=-=-=-",state.getString("ere"));
     }
     
-    @Override
-    protected void onResume(){
-    	super.onResume();
-    }
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -164,6 +168,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         // on tab selected
         // show respected fragment view
        inputs.cdv = always.mycdv;
+       converts.cdv = always.mycdv;
     	viewPager.setCurrentItem(tab.getPosition());
         
     }
@@ -222,6 +227,15 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         case R.id.save_as_image_btn:
         	save();
         	return true;
+        case R.id.save_btn:
+        	saveFile();
+        	return true;
+        case R.id.from_file_btn:
+        	loadFile();
+        	return true;
+        case R.id.exit_btn:
+        	finish();
+        	return true;
         default:
             return super.onOptionsItemSelected(item);
         }
@@ -258,7 +272,138 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
     }
     
+    public void loadFile(){
+    	AlertDialog.Builder alert = new AlertDialog.Builder(this);
+		alert.setTitle("Input file");
+		alert.setMessage("Please give the name of the file");
 	
+		final EditText input = new EditText(this);
+		alert.setView(input);
+		final String fileName;
+		final boolean cont = false;
+		final Context actv = this;
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			@SuppressWarnings("unchecked")
+			public void onClick(DialogInterface dialog, int whichButton) {
+		        String path = Environment.getExternalStorageDirectory().getAbsolutePath(); 
+		              
+		        File file = getAlbumStorageDir(input.getText().toString()+".txt");
+		        Toast.makeText(getApplicationContext(), file.getAbsolutePath(),Toast.LENGTH_LONG).show();
+		        try {
+					BufferedReader br = new BufferedReader(new FileReader(file));
+					boolean readLines = false;
+					String row;
+					always.mycdv.mCircles.clear();
+					always.mycdv.mLines.clear();
+					while( (row = br.readLine()) != null){
+						if(row.indexOf("===lines===")>=0){
+							readLines = true;
+						}
+						if(!readLines && row.indexOf("===lines===")<0){
+							String data[] = row.split(",");
+							CircleArea c = new CircleArea(Integer.parseInt(data[1]),Integer.parseInt(data[2]),40,data[0]);
+							c.id = data[0];
+							c.label = data[0];
+							
+							c.isInitial = Boolean.parseBoolean(data[3]);
+							if(c.isInitial){
+								always.mycdv.initial = c;
+							}
+							c.isFinal = Boolean.parseBoolean(data[4]);
+							
+							always.mycdv.mCircles.add(c);
+						}
+						else if(row.indexOf("===lines===")<0){
+							String lineData[] = row.split(",");
+							CircleArea start = null;
+							CircleArea end = null;
+							for(CircleArea c: always.mycdv.mCircles){
+								if(c.id.equals(lineData[0])){
+									start = c;
+									
+								}
+								if(c.id.equals(lineData[1])){
+									end = c;
+								}
+							}
+							if(start != null && end != null){
+								Lines l = new Lines(start.centerX,start.centerY,end.centerX,end.centerY);
+								l.circleStart = start;
+								l.circleEnd = end;
+								l.name =lineData[2];
+								start.addRelation(end, l.name);
+								always.mycdv.mLines.add(l);
+							}
+							
+						}
+						else{
+							String val = row.substring(0,row.indexOf("===lines==="));
+							int n = Integer.parseInt(val);
+							always.mycdv.number_of_nodes = n;
+						}
+					}
+					always.mycdv.invalidate();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} 
+			  }
+			});
+		
+		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int whichButton) {
+				
+			}
+		});
+
+		alert.show();
+    }
+    
+	public void saveFile(){
+		AlertDialog.Builder alert = new AlertDialog.Builder(this);
+		alert.setTitle("Input file");
+		alert.setMessage("Please give the name of the file");
+	
+		final EditText input = new EditText(this);
+		alert.setView(input);
+		final String fileName;
+		final boolean cont = false;
+		final Context actv = this;
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			@SuppressWarnings("unchecked")
+			public void onClick(DialogInterface dialog, int whichButton) {
+		        String path = Environment.getExternalStorageDirectory().getAbsolutePath(); 
+		              
+		        File file = getAlbumStorageDir(input.getText().toString()+".txt");
+		        Toast.makeText(getApplicationContext(), file.getAbsolutePath(),Toast.LENGTH_LONG).show();
+		        try {
+					BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+					for(CircleArea c: always.mycdv.mCircles){
+						bw.write(c.id+","+c.centerX+","+c.centerY+","+String.valueOf(c.isInitial)+","+String.valueOf(c.isFinal));
+						bw.newLine();
+					}
+					bw.write(String.valueOf(always.mycdv.number_of_nodes)+"===lines===");
+					bw.newLine();
+					for(Lines l: always.mycdv.mLines.toArray(new Lines[0])){
+						bw.write(l.circleStart.id+","+l.circleEnd.id+","+l.name);
+						bw.newLine();
+					}
+					bw.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} 
+			  }
+			});
+		
+		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int whichButton) {
+				
+			}
+		});
+
+		alert.show();
+	}
     public void save()
     {
     	this.always.mycdv.setDrawingCacheEnabled(true);

@@ -19,10 +19,9 @@
     <string name="title_activity_fast_run">Fast Run </string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_multi_run">Multi Run</string>
-	<string name="add_rowx">Add Row</string>
-	<string name="delete_row">Delete Row(s)</string>
-	<string name="multi_run">Run</string>
-	
-    
-    	
+    <string name="add_rowx">Add Row</string>
+    <string name="delete_row">Delete Row(s)</string>
+    <string name="multi_run">Run</string>
+    <string name="title_activity_to_df">ToDFA</string>
+
 </resources>
